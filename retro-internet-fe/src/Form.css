@@ -1,0 +1,19 @@
+.inputStyle  {
+    width: 80%;
+    padding: 10px;
+    margin: 10px 0;
+    font-Size: 16px;
+    border: 2px solid #000;
+    border-Radius: 4p
+}
+
+.buttonStyle {
+    width: 10%;
+    padding: 10px;
+    margin-left: 50px;
+    margin: 10px 0;
+    font-Size: 16px;
+    border: 2px solid #000;
+    border-Radius: 4px;
+}
+  
