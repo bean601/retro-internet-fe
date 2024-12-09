@@ -12,9 +12,16 @@ function App() {
       <div className="retro-content">
         <Form className="FormRoot" />      
         <div>
-          <h1 className="welcome-text">
-            Welcome to 1999
-          </h1>
+          <h3 className="welcome-text">Some sites to try:</h3> 
+          <h4 className="site-list">
+            cnet.com (November 1999)<br/>
+            yahoo.com (December 1998)<br />
+            gamespot.com (January 1999)<br/>
+            davematthewsband.com (May 2000)<br/>
+            Microsoft.com (January 1999)<br/>
+            aol.com (October 1999)<br/>
+            ebay.com (April 1999)<br/>            
+          </h4>
         </div>
       </div>
     </div>    

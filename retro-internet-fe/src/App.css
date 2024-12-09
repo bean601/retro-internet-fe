@@ -61,6 +61,10 @@ body {
   text-shadow: 2px 2px #000;
 }
 
+.site-list {
+  text-align: center;
+}
+
 .retro-content {
   padding: 20px;
   background-color: #fff;
