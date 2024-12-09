@@ -4,7 +4,12 @@ module.exports = {
     "./src/**/*.{js,jsx,ts,tsx}",
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        'pixel': ['"Press Start 2P"', 'cursive'],
+        'retro': ['VT323', 'monospace'],
+      },
+    },
   },
   plugins: [],
 }

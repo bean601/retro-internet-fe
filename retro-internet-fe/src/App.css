@@ -19,7 +19,11 @@
 
 
 .FormRoot {
-  vertical-align: top;
+  width: 100%;
+  max-width: 500px; 
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .preserve-original-html {
@@ -28,6 +32,61 @@
 
 .preserve-original-html * {
   all: initial;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: "Comic Sans MS", cursive;
+}
+
+.retro-container {
+  min-height: 100vh;
+  background-color: #008080;
+}
+
+.retro-header {
+  background-color: #800080;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  border-bottom: 4px solid #4B0082;
+}
+
+.retro-header h1 {
+  color: #FFD700;
+  text-align: center;
+  font-size: 2.5rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-shadow: 2px 2px #000;
+}
+
+.retro-content {
+  padding: 20px;
+  background-color: #fff;
+  margin: 20px;
+  border: 2px solid #000;
+  box-shadow: 5px 5px 0px #000;
+}
+
+.welcome-text {
+  font-size: 24px;
+  font-weight: bold;
+  color: #FF1493;
+  text-decoration: underline;
+  text-align: center;
+  margin-top: 20px;
+}
+
+/* Add some 90s flair */
+.blink {
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  50% {
+    opacity: 0;
+  }
 }
 
 @tailwind base;
