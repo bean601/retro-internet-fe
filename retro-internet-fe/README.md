@@ -7,4 +7,4 @@ recieves a request for that src/link, it knows where to pull from in the snapsho
 
 This was never meant to be a web front end, the original intent was to run a Raspberry Pi to the NIC on my 1998 IBM Aptiva E series for surfing a period correct internet. It worked great!
 
-# NOTE: This and the backend project are only meant as an education experiment. Please consider donating to Archive.org.
+## NOTE: This and the backend project are only meant as an educational experiment. Please consider donating to Archive.org.
