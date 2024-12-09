@@ -52,6 +52,22 @@ body {
   border-bottom: 4px solid #4B0082;
 }
 
+.retro-footer {
+  background-color: #800080;
+  padding: 20px;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  border-bottom: 4px solid #4B0082;
+}
+
+.retro-footer h4 {
+  color: #FFD700;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: bold;
+  text-transform: uppercase;
+  text-shadow: 2px 2px #000;
+}
+
 .retro-header h1 {
   color: #FFD700;
   text-align: center;
