@@ -2,126 +2,184 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import axios from 'axios';
 import parse from 'html-react-parser';
+import './Form.css';
+import Skeleton from 'react-loading-skeleton'
+import 'react-loading-skeleton/dist/skeleton.css'
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 function Form() {
-    const { register, handleSubmit, formState: { errors } } = useForm();
+    const { register, handleSubmit, formState: { errors }, setValue } = useForm();
     const [result, setResult] = useState('');
     const htmlRef = useRef(null);
     const [isLoading, setIsLoading] = useState(false);
     const iframeRef = useRef(null);
-  
-      //just playing with styles in jsx, wouldn't do this for real
-    const inputStyles = {
-      width: '80%',
-      padding: '10px',
-      margin: '10px 0',
-      fontSize: '16px',
-      border: '2px solid #000',
-      borderRadius: '4px'
+    const [history, setHistory] = useState([]);
+    const [currentUrl, setCurrentUrl] = useState('');
+    const [currentUrlIndex, setCurrentUrlIndex] = useState(0);
+    const urlInputRef = useRef(null);
+
+    const back = () => {
+      console.log('currentUrlIndex:', currentUrlIndex);
+      if (currentUrlIndex > 0){
+        setCurrentUrlIndex(currentUrlIndex - 1);
+        loadHtmlFromApi(history[currentUrlIndex - 1]);
+        setHistory(history.slice(0, currentUrlIndex));
+      }
+    }
+
+    const forward = () => {
+      console.log('currentUrlIndex:', currentUrlIndex);
+      if (currentUrlIndex < history.length - 1){
+        setCurrentUrlIndex(currentUrlIndex + 1);
+        loadHtmlFromApi(history[currentUrlIndex + 1]);
+        setHistory(history.slice(0, currentUrlIndex + 1));
+    }
+    } 
+
+    const loadHtmlFromApi = async (url) => {
+      setIsLoading(true);
+
+      try {
+        //TODO: make URL an app setting
+        console.log('url passed in:', url);
+        let urlToHit = `https://retro-internet20241208155639.azurewebsites.net/${url}`;
+        console.log('urlToHit:', urlToHit);
+
+        const response = await axios.get(urlToHit, {
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+          }
+        });
+
+        console.log('Response:', response);
+        setIsLoading(false);
+        setResult(response.data);
+
+        setCurrentUrl(url);
+      } catch (error) {
+        console.log('Full error:', error); 
+        if (error.response) {
+          console.log(error.response.data);
+        }
+        setResult('Error occurred: ' + error.message);
+      }
+
+      setIsLoading(false);
     };
 
-    const buttonStyles = {
-      width: '10%',
-      padding: '10px',
-      margin: '10px 0',
-      fontSize: '16px',
-      border: '2px solid #000',
-      borderRadius: '4px'
-    };
+    function getLastDomainPath(url) {
+      const parts = url.split('/').filter(Boolean);
+      const domainIndex = parts.findIndex(part => part.includes('.'));
+
+      if (domainIndex >= 0) {
+          const innerDomainIndex = parts.findIndex(part => part.includes('.'));
+
+          if (innerDomainIndex >= 0) {
+            const joined = parts.slice(domainIndex).join('/');
+            const cleaned = joined.substring(joined.indexOf('/') + 1);
+            return cleaned;
+          } else {
+            return parts.slice(domainIndex).join('/');
+          }
+      }
+      return '';
+  }
 
     const onSubmit = async (data) => {
-        setIsLoading(true);
-
-        try {
-          //TODO: make URL an app setting
-          const response = await axios.get(`https://retro-internet20241208155639.azurewebsites.net/${data.searchValue}`, {
-            headers: {
-              'Accept': 'application/json',
-              'Content-Type': 'application/json'
-            }
-          });
-
-          console.log('Response:', response);           
-          setIsLoading(false);          
-          setResult(response.data);
-        } catch (error) {
-          console.log('Full error:', error); 
-          if (error.response) {
-            console.log(error.response.data);
-          }
-          setResult('Error occurred: ' + error.message);
-        }
-
-        setIsLoading(false);
-      };
+      setCurrentUrlIndex(currentUrlIndex + 1);
+      setHistory([...history, data.searchValue]); 
+      return loadHtmlFromApi(data.searchValue);
+    };
 
       const getModifiedHtml = (htmlContent) => {
+      //  const cleanHtml = htmlContent.replace(/<script[^>]*src=["'](?:.*archive\.org|.*wombat\.js|.*bundle-playback\.js)[^>]*><\/script>/g, '');
+        
         const script = `
           <script>
             document.addEventListener('click', function(e) {
-              if (e.target.tagName === 'A') {
+              const link = e.target.closest('a'); 
+              if (link) {
                 e.preventDefault();
+                const url = link.href;
                 window.parent.postMessage({
                   type: 'LINK_CLICK',
-                  url: e.target.href
+                  url: url
                 }, '*');
               }
             });
           </script>
         `;
-        
+
         return htmlContent.replace('</body>', `${script}</body>`);
       };
-
+      
       useEffect(() => {
         const handleMessage = async (event) => {
           if (event.data && event.data.type === 'LINK_CLICK') {
-            setIsLoading(true);
-            try {
+            let rawUrl = event.data.url;
+            let cleanedUrl = getLastDomainPath(rawUrl);
+            console.log('rawUrl:', rawUrl);
+            console.log('cleanedUrl:', cleanedUrl);
 
-              console.log("trying to hit from iframe - " + event.data.url);
+            setValue("searchValue", cleanedUrl);
 
-              const response = await axios.get(
-                `https://retro-internet20241208155639.azurewebsites.net/${event.data.url}`,
-                {
-                  headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                  }
-                }
-              );
-              setResult(response.data);
-            } catch (error) {
-              console.log('Error handling iframe click:', error);
-              setResult('Error occurred: ' + error.message);
-            }
-            setIsLoading(false);
+            loadHtmlFromApi(cleanedUrl);
           }
         };
-  
+      
         window.addEventListener('message', handleMessage);
         return () => window.removeEventListener('message', handleMessage);
       }, []);
-  
     
     return (
-        <div>
-          <form onSubmit={handleSubmit(onSubmit)}>
-            <input 
-              style={inputStyles}
-              {...register("searchValue", { 
-                required: "This url required",
-                minLength: { value: 1, message: "Please enter a valid url" }
-              })}
-              placeholder="Enter value"
-            />
-            {errors.searchValue && (
-              <span style={{ color: 'red' }}>{errors.searchValue.message}</span>
-            )}
-            <button style={buttonStyles} type="submit">GO!</button>
-          </form>
+      <div>
+      {errors.searchValue && (
+        <div className="mb-2">
+          <span className="text-red-500">{errors.searchValue.message}</span>
+        </div>
+      )}
+      <div className="flex items-center gap-2">
+        <div className="flex items-center">
+          <button 
+            onClick={back} 
+            disabled={currentUrlIndex > 0}
+            className="p-2 hover:bg-gray-100 rounded disabled:opacity-50"
+          >
+            <ChevronLeft size={24} />
+          </button>
+          <button 
+            onClick={forward} 
+            disabled={currentUrlIndex < history.length - 1}
+            className="p-2 hover:bg-gray-100 rounded disabled:opacity-50"
+          >
+            <ChevronRight size={24} />
+          </button>
+        </div>
+        <form 
+          onSubmit={handleSubmit(onSubmit)} className="flex-1 flex gap-2">
+          <input 
+             ref={(e) => {
+              urlInputRef.current = e
+              register("searchValue").ref(e)
+            }}
+            className="flex-1 px-4 py-2 border rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+            {...register("searchValue", { 
+              required: "This url required",
+              minLength: { value: 1, message: "Please enter a valid url" }
+            })}
+            placeholder="Enter nostalgic url"
+          />
+          <button 
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            type="submit"
+          >
+            GO!
+          </button>
+        </form>
+      </div>
           { isLoading ? 
-            <div>Loading...</div> 
+            <Skeleton count={33} />
             :  
           result && 
             // <div  
@@ -142,7 +200,7 @@ function Form() {
               border: '1px solid #ddd',
               borderRadius: '4px'
             }}
-            sandbox="allow-same-origin allow-scripts allow-forms"
+            sandbox="allow-same-origin allow-forms allow-modals allow-scripts"
             title="90s-website"
           />
         }
